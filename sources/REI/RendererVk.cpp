@@ -5710,10 +5710,11 @@ void REI_queueSubmit(
 }
 
 void REI_queuePresent(
-    REI_Queue* pQueue, REI_Swapchain* pSwapchain, uint32_t swapChainImageIndex, uint32_t waitSemaphoreCount,
-    REI_Semaphore** ppWaitSemaphores)
+    REI_Queue* pQueue, uint32_t swapchainCount, REI_Swapchain** ppSwapchains, uint32_t* swapchainImageIndices,
+    uint32_t waitSemaphoreCount, REI_Semaphore** ppWaitSemaphores)
 {
     REI_ASSERT(pQueue);
+    REI_ASSERT(swapchainCount < REI_MAX_PRESENT_SWAPCHAINS);
     if (waitSemaphoreCount > 0)
     {
         REI_ASSERT(ppWaitSemaphores);
@@ -5736,18 +5737,25 @@ void REI_queuePresent(
         }
     }
 
+    VkSwapchainKHR* swapchains =
+        swapchainCount ? (VkSwapchainKHR*)alloca(swapchainCount * sizeof(VkSwapchainKHR)) : NULL;
+    for (uint32_t i = 0; i < waitSemaphoreCount; ++i)
+    {
+        swapchains[i] = ppSwapchains[i]->pSwapchain;
+    }
+
     DECLARE_ZERO(VkPresentInfoKHR, present_info);
     present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     present_info.pNext = NULL;
     present_info.waitSemaphoreCount = waitCount;
     present_info.pWaitSemaphores = wait_semaphores;
-    present_info.swapchainCount = 1;
-    present_info.pSwapchains = &(pSwapchain->pSwapchain);
-    present_info.pImageIndices = &(swapChainImageIndex);
+    present_info.swapchainCount = swapchainCount;
+    present_info.pSwapchains = swapchains;
+    present_info.pImageIndices = swapchainImageIndices;
     present_info.pResults = NULL;
 
     VkResult vk_res =
-        vkQueuePresentKHR(pSwapchain->pPresentQueue ? pSwapchain->pPresentQueue : pQueue->pVkQueue, &present_info);
+        vkQueuePresentKHR(/*pSwapchain->pPresentQueue ? pSwapchain->pPresentQueue : */pQueue->pVkQueue, &present_info);
     if (vk_res == VK_ERROR_OUT_OF_DATE_KHR)
     {
         // TODO : Fix bug where we get this error if window is closed before able to present queue.

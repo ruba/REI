@@ -205,7 +205,7 @@ void sample_render(uint64_t dt, uint32_t w, uint32_t h)
 
     REI_ASSERT(frameCmd);
     REI_queueSubmit(gfxQueue, 1, &frameCmd, sync.fence, 1, &sync.imageSem, 1, &sync.renderEndSem);
-    REI_queuePresent(gfxQueue, swapchain, frameImageIndex, 1, &sync.renderEndSem);
+    REI_queuePresent(gfxQueue, 1, &swapchain, &frameImageIndex, 1, &sync.renderEndSem);
 
     frameCmd = NULL;
     ++frameIndex;

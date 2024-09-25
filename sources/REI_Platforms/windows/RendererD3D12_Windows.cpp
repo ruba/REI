@@ -619,14 +619,16 @@ void REI_addSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* p_desc, 
 }
 
 void REI_queuePresent(
-    REI_Queue* p_queue, REI_Swapchain* p_swap_chain, uint32_t swap_chain_image_index, uint32_t wait_semaphore_count,
-    REI_Semaphore** pp_wait_semaphores)
+    REI_Queue* p_queue, uint32_t swapchain_count, REI_Swapchain** p_swap_chains, uint32_t* swap_chain_image_indices,
+    uint32_t wait_semaphore_count, REI_Semaphore** pp_wait_semaphores)
 {
+    REI_ASSERT(swapchain_count < REI_MAX_PRESENT_SWAPCHAINS);
     REI_LogPtr pLog = p_queue->pRenderer->pLog;
 
-    if (p_swap_chain)
+    for (uint32_t i = 0; i < swapchain_count; ++i)
     {
-        REI_Swapchain_Windows* pWindowsSwapChain = (REI_Swapchain_Windows*)p_swap_chain;
+        REI_ASSERT(p_swap_chains[i]);
+        REI_Swapchain_Windows* pWindowsSwapChain = (REI_Swapchain_Windows*)p_swap_chains[i];
         HRESULT                hr;
         hr = pWindowsSwapChain->pDxSwapChain->Present(pWindowsSwapChain->mDxSyncInterval, pWindowsSwapChain->mFlags);
 
