@@ -26,6 +26,7 @@ enum
     REI_MAX_SUBMIT_WAIT_SEMAPHORES = 8,
     REI_MAX_SUBMIT_SIGNAL_SEMAPHORES = 8,
     REI_MAX_PRESENT_WAIT_SEMAPHORES = 8,
+    REI_MAX_PRESENT_SWAPCHAINS = 8,
     REI_MAX_VERTEX_BINDINGS = 15,
     REI_MAX_VERTEX_ATTRIBS = 15,
     REI_MAX_RESOURCE_NAME_LENGTH = 256,
@@ -1322,8 +1323,8 @@ void REI_queueSubmit(
     REI_Queue* p_queue, uint32_t cmd_count, REI_Cmd** pp_cmds, REI_Fence* pFence, uint32_t wait_semaphore_count,
     REI_Semaphore** pp_wait_semaphores, uint32_t signal_semaphore_count, REI_Semaphore** pp_signal_semaphores);
 void REI_queuePresent(
-    REI_Queue* p_queue, REI_Swapchain* p_swap_chain, uint32_t swap_chain_image_index, uint32_t wait_semaphore_count,
-    REI_Semaphore** pp_wait_semaphores);
+    REI_Queue* p_queue, uint32_t swapchain_count, REI_Swapchain** p_swap_chains, uint32_t* swap_chain_image_indices,
+    uint32_t wait_semaphore_count, REI_Semaphore** pp_wait_semaphores);
 void REI_waitQueueIdle(REI_Queue* p_queue);
 void REI_getQueueProperties(REI_Queue* pQueue, REI_QueueProperties* outProperties);
 //void REI_getTimestampFrequency(REI_Queue* pQueue, double* pFrequency);
