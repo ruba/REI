@@ -180,6 +180,8 @@ typedef struct REI_Texture
     uint32_t mUav;
     /// This value will be false if the underlying resource is not owned by the texture (swapchain textures,...)
     uint32_t mOwnsImage;
+    /// Is the texture CPU accessible
+    bool mHostVisible;
 } REI_Texture;
 
 typedef struct REI_Sampler

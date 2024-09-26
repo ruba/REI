@@ -1339,6 +1339,8 @@ void REI_setBufferName(REI_Renderer* pRenderer, REI_Buffer* pBuffer, const char*
 
 void REI_addTexture(REI_Renderer* pRenderer, const REI_TextureDesc* pDesc, REI_Texture** pp_texture);
 void REI_removeTexture(REI_Renderer* pRenderer, REI_Texture* p_texture);
+void REI_mapTexture(REI_Renderer* pRenderer, REI_Texture* pTexture, void** ppMappedMem, uint64_t* pRowPitch);
+void REI_unmapTexture(REI_Renderer* pRenderer, REI_Texture* pTexture);
 void REI_setTextureName(REI_Renderer* pRenderer, REI_Texture* pTexture, const char* pName);
 
 void REI_addShaders(REI_Renderer* pRenderer, const REI_ShaderDesc* p_descs, uint32_t shaderCount, REI_Shader** pp_shader_programs);

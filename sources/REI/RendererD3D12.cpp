@@ -2041,7 +2041,14 @@ void REI_addTexture(REI_Renderer* pRenderer, const REI_TextureDesc* in_pDesc, RE
         }
 
         D3D12MA::ALLOCATION_DESC alloc_desc = {};
-        alloc_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+        if (pDesc->hostVisible)
+        {
+            alloc_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD;
+        }
+        else
+        {
+            alloc_desc.HeapType = D3D12_HEAP_TYPE_DEFAULT;
+        }
         if (pDesc->flags & REI_TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT)
             alloc_desc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
 
@@ -2365,6 +2372,7 @@ void REI_addTexture(REI_Renderer* pRenderer, const REI_TextureDesc* in_pDesc, RE
     pTexture->mFormat = pDesc->format;
     pTexture->mArraySizeMinusOne = pDesc->arraySize - 1;
     pTexture->mSampleCount = pDesc->sampleCount;
+    pTexture->mHostVisible = pDesc->hostVisible;
 
     *pp_texture = pTexture;
 }
@@ -2401,6 +2409,27 @@ void REI_removeTexture(REI_Renderer* pRenderer, REI_Texture* p_texture)
     }
 
     pRenderer->allocator.pFree(pRenderer->allocator.pUserData, p_texture);
+}
+
+void REI_mapTexture(REI_Renderer* pRenderer, REI_Texture* pTexture, void** ppMappedMem, uint64_t* pRowPitch)
+{
+    REI_ASSERT(false);
+    //REI_ASSERT(pRenderer);
+    //REI_ASSERT(pTexture);
+    //REI_ASSERT(ppMappedMem);
+    //REI_ASSERT(pRowPitch);
+    //REI_ASSERT(pTexture->mHostVisible && "Trying to map non-cpu accessible resource");
+    //CHECK_HRESULT(pTexture->pDxResource->Map(0, nullptr, ppMappedMem));
+}
+
+void REI_unmapTexture(REI_Renderer* pRenderer, REI_Texture* pTexture)
+{
+    REI_ASSERT(false);
+    //REI_ASSERT(pRenderer);
+    //REI_ASSERT(pTexture);
+    //REI_ASSERT(pTexture->mHostVisible && "Trying to unmap non-cpu accessible resource");
+
+    //pTexture->pDxResource->Unmap(0, NULL);
 }
 
 void REI_setTextureName(REI_Renderer* pRenderer, REI_Texture* pTexture, const char* pName)

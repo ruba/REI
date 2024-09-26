@@ -3437,7 +3437,7 @@ void REI_addTexture(REI_Renderer* pRenderer, const REI_TextureDesc* pDesc, REI_T
         VmaAllocationCreateInfo mem_reqs = { 0 };
         if (desc.flags & REI_TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT)
             mem_reqs.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
-        mem_reqs.usage = (VmaMemoryUsage)VMA_MEMORY_USAGE_GPU_ONLY;
+        mem_reqs.usage = desc.hostVisible ? VMA_MEMORY_USAGE_CPU_TO_GPU : VMA_MEMORY_USAGE_GPU_ONLY;
 
         VkExternalMemoryImageCreateInfoKHR externalInfo = { VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
                                                             NULL };
@@ -3666,6 +3666,37 @@ void REI_removeTexture(REI_Renderer* pRenderer, REI_Texture* pTexture)
     }
 
     allocator.pFree(allocator.pUserData, pTexture);
+}
+
+void REI_mapTexture(REI_Renderer* pRenderer, REI_Texture* pTexture, void** ppMappedMem, uint64_t* pRowPitch)
+{
+    REI_ASSERT(pRenderer);
+    REI_ASSERT(pTexture);
+    REI_ASSERT(ppMappedMem);
+    REI_ASSERT(pRowPitch);
+    REI_ASSERT(pTexture->desc.hostVisible && "Trying to map non-cpu accessible resource");
+
+    VkResult vk_res = vmaMapMemory(pRenderer->pVmaAllocator, pTexture->pVkAllocation, ppMappedMem);
+    REI_ASSERT(vk_res == VK_SUCCESS);
+
+    DECLARE_ZERO(VkImageSubresource, subresource);
+    subresource.arrayLayer = 0;
+    subresource.mipLevel = 0;
+    subresource.aspectMask = pTexture->vkAspectMask;
+
+    DECLARE_ZERO(VkSubresourceLayout, subresource_layout);
+    vkGetImageSubresourceLayout(pRenderer->pVkDevice, pTexture->pVkImage, &subresource, &subresource_layout);
+
+    *pRowPitch = subresource_layout.rowPitch;
+}
+
+void REI_unmapTexture(REI_Renderer* pRenderer, REI_Texture* pTexture)
+{
+    REI_ASSERT(pRenderer);
+    REI_ASSERT(pTexture);
+    REI_ASSERT(pTexture->desc.hostVisible && "Trying to unmap non-cpu accessible resource");
+
+    vmaUnmapMemory(pRenderer->pVmaAllocator, pTexture->pVkAllocation);
 }
 
 void REI_addSampler(REI_Renderer* pRenderer, const REI_SamplerDesc* pDesc, REI_Sampler** pp_sampler)
@@ -3909,7 +3940,9 @@ void REI_updateDescriptorTableArray(
                         pImageInfo[arr] = {
                             VK_NULL_HANDLE,                               // REI_Sampler
                             pParam->ppTextures[arr]->pVkSRVDescriptor,    // Image View
-                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL      // Image Layout
+                            pParam->ppTextures[arr]->desc.hostVisible
+                                ? VK_IMAGE_LAYOUT_GENERAL
+                                : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL    // Image Layout
                         };
                     }
                 }
