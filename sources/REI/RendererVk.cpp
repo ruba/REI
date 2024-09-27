@@ -3392,13 +3392,13 @@ void REI_addTexture(REI_Renderer* pRenderer, const REI_TextureDesc* pDesc, REI_T
         add_info.mipLevels = desc.mipLevels;
         add_info.arrayLayers = desc.arraySize;
         add_info.samples = util_to_vk_sample_count(desc.sampleCount);
-        add_info.tiling = (0 != desc.hostVisible) ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
+        add_info.tiling = desc.hostVisible ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
         add_info.usage = util_to_vk_image_usage(descriptors);
         add_info.usage |= additionalFlags;
         add_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         add_info.queueFamilyIndexCount = 0;
         add_info.pQueueFamilyIndices = NULL;
-        add_info.initialLayout = (0 != desc.hostVisible) ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_PREINITIALIZED;
+        add_info.initialLayout = desc.hostVisible ? VK_IMAGE_LAYOUT_PREINITIALIZED : VK_IMAGE_LAYOUT_UNDEFINED;
 
         if (cubemapRequired)
             add_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
