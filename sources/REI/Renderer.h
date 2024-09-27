@@ -310,6 +310,7 @@ typedef enum REI_ResourceState
     REI_RESOURCE_STATE_GENERIC_READ = (((((0x1 | 0x2) | 0x40) | 0x80) | 0x200) | 0x800),
     REI_RESOURCE_STATE_PRESENT = 0x4000,
     REI_RESOURCE_STATE_COMMON = 0x8000,
+    REI_RESOURCE_STATE_PREINITIALIZED = 0x10000,
 } REI_ResourceState;
 
 /// Choosing Memory Type

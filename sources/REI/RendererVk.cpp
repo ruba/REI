@@ -874,6 +874,9 @@ VkImageLayout util_to_vk_image_layout(REI_ResourceState usage)
     if (usage == REI_RESOURCE_STATE_COMMON)
         return VK_IMAGE_LAYOUT_GENERAL;
 
+    if (usage == REI_RESOURCE_STATE_PREINITIALIZED)
+        return VK_IMAGE_LAYOUT_PREINITIALIZED;
+
     return VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
@@ -3395,7 +3398,7 @@ void REI_addTexture(REI_Renderer* pRenderer, const REI_TextureDesc* pDesc, REI_T
         add_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         add_info.queueFamilyIndexCount = 0;
         add_info.pQueueFamilyIndices = NULL;
-        add_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        add_info.initialLayout = (0 != desc.hostVisible) ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_PREINITIALIZED;
 
         if (cubemapRequired)
             add_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
