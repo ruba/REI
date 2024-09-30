@@ -3441,6 +3441,7 @@ void REI_addTexture(REI_Renderer* pRenderer, const REI_TextureDesc* pDesc, REI_T
         if (desc.flags & REI_TEXTURE_CREATION_FLAG_OWN_MEMORY_BIT)
             mem_reqs.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
         mem_reqs.usage = desc.hostVisible ? VMA_MEMORY_USAGE_CPU_TO_GPU : VMA_MEMORY_USAGE_GPU_ONLY;
+        mem_reqs.requiredFlags = desc.hostVisible ? VK_MEMORY_PROPERTY_HOST_COHERENT_BIT : 0;
 
         VkExternalMemoryImageCreateInfoKHR externalInfo = { VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
                                                             NULL };
