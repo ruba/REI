@@ -5784,7 +5784,7 @@ void REI_queuePresent(
     present_info.pResults = NULL;
 
     VkResult vk_res =
-        vkQueuePresentKHR(pSwapchain->pPresentQueue ? pSwapchain->pPresentQueue : pQueue->pVkQueue, &present_info);
+        vkQueuePresentKHR(/*pSwapchain->pPresentQueue ? pSwapchain->pPresentQueue : */pQueue->pVkQueue, &present_info);
     if (vk_res == VK_ERROR_OUT_OF_DATE_KHR)
     {
         // TODO : Fix bug where we get this error if window is closed before able to present queue.
