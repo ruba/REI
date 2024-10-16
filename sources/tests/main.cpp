@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 
     FILE* file = register_log_output(argv[0]);
 
-    REI_RendererDesc rendererDesc{ "unit_test", nullptr, REI_SHADER_TARGET_5_1, false, nullptr, sample_log };
+    REI_RendererDesc rendererDesc{ "unit_test", nullptr, REI_SHADER_TARGET_5_1, false, false, nullptr, sample_log };
 
     Thread::SetMainThread();
     Thread::SetCurrentThreadName("MainThread");

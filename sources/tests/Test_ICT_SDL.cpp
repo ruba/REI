@@ -178,7 +178,7 @@ static FILE* register_log_output(const char* path)
 
 int sample_init(Sample* sample, REI_SwapchainDesc* swapchainDesc)
 {
-    REI_RendererDesc desc{ "Test_ICT", nullptr, REI_SHADER_TARGET_5_1, false, nullptr, sample_log };
+    REI_RendererDesc desc{ "Test_ICT", nullptr, REI_SHADER_TARGET_5_1, false, false, nullptr, sample_log };
 
     REI_initRenderer(&desc, &renderer);
 

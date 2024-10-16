@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
     swapchainDesc.enableVsync = vsync;
     swapchainDesc.windowHandle = getPlatformWindowHandle(&info);
 
-    REI_RendererDesc rendererDesc{ "triangle_test", gpu_name, REI_SHADER_TARGET_5_1, false, nullptr, sample_log };
+    REI_RendererDesc rendererDesc{ "triangle_test", gpu_name, REI_SHADER_TARGET_5_1, false, false, nullptr, sample_log };
 
     int run = sample_init(&rendererDesc, &swapchainDesc);
     baseCntr = SDL_GetPerformanceCounter();

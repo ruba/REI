@@ -1045,6 +1045,7 @@ typedef struct REI_RendererDesc
     /// This results in new validation not possible during API calls on the CPU, by creating patched shaders that have validation added directly to the shader.
     /// However, it can slow things down a lot, especially for applications with numerous PSOs. Time to see the first render frame may take several minutes
     bool                          enableGPUBasedValidation;
+    bool                          preferIntegratedGPU;
     const REI_AllocatorCallbacks* pAllocator;
     REI_LogPtr                    pLog;
 } REI_RendererDesc;

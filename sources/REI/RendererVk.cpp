@@ -2031,13 +2031,13 @@ static void REI_addDevice(const REI_RendererDescVk* pDescVk, REI_Renderer* pRend
         if (testProps.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
             refProps.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
         {
-            return true;
+            return !pDescVk->desc.preferIntegratedGPU;
         }
 
         if (testProps.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU &&
             refProps.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
         {
-            return false;
+            return pDescVk->desc.preferIntegratedGPU;
         }
 
         //compare by preset if both gpu's are of same type (integrated vs discrete)
