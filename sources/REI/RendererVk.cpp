@@ -2000,7 +2000,7 @@ static void REI_addDevice(const REI_RendererDescVk* pDescVk, REI_Renderer* pRend
         .reserve<VkExtensionProperties>(maxExtensionsCount)
         .reserve<float>(REI_VK_MAX_QUEUES_PER_FAMILY)
         .reserve<VkDeviceQueueCreateInfo>(REI_VK_MAX_QUEUE_FAMILY_COUNT)
-        .reserve<VkDeviceCreateInfo>();
+        .reserve<VkDeviceCreateInfo>().reserve<char>(2 * VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
 
     if (!stackAlloc.done(allocator))
     {
@@ -2023,10 +2023,32 @@ static void REI_addDevice(const REI_RendererDescVk* pDescVk, REI_Renderer* pRend
     // To find VRAM in Vulkan, loop through all the heaps and find if the
     // heap has the DEVICE_LOCAL_BIT flag set
     /************************************************************************/
+    char* testLowerDeviceName =
+        stackAlloc.allocZeroed<char>(VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
+    char* refLowerDeviceName =
+        stackAlloc.allocZeroed<char>(VK_MAX_PHYSICAL_DEVICE_NAME_SIZE);
     auto isDeviceBetter = [&](uint32_t testIndex, uint32_t refIndex) -> bool
     {
         VkPhysicalDeviceProperties& testProps = vkDeviceProperties[testIndex].properties;
         VkPhysicalDeviceProperties& refProps = vkDeviceProperties[refIndex].properties;
+
+        for (uint32_t j = 0; j < strlen(testProps.deviceName); ++j)
+            testLowerDeviceName[j] = tolower(testProps.deviceName[j]);        
+        
+        for (uint32_t j = 0; j < strlen(refProps.deviceName); ++j)
+            refLowerDeviceName[j] = tolower(refProps.deviceName[j]);
+
+        bool testHasDX12SubStr = strstr(testLowerDeviceName, "dx12") != nullptr;
+        bool refHasDX12SubStr = strstr(refLowerDeviceName, "dx12") != nullptr;
+
+        if (testHasDX12SubStr && !refHasDX12SubStr) {
+            return false;
+        }
+
+        if (!testHasDX12SubStr && refHasDX12SubStr)
+        {
+            return true;
+        }
 
         if (testProps.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
             refProps.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
