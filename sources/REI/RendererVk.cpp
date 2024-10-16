@@ -2094,8 +2094,7 @@ static void REI_addDevice(const REI_RendererDescVk* pDescVk, REI_Renderer* pRend
     uint32_t deviceIndex = UINT32_MAX;
     for (uint32_t i = 0; i < pRenderer->numOfDevices; ++i)
     {
-        if (pDescVk->desc.gpu_name &&
-            strstr(pRenderer->vkDeviceProperties.properties.deviceName, pDescVk->desc.gpu_name) != nullptr)
+        if (pDescVk->desc.gpu_name && strstr(vkDeviceProperties[i].properties.deviceName, pDescVk->desc.gpu_name) != nullptr)
         {
             deviceIndex = i;
             break;
