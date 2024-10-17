@@ -2038,8 +2038,8 @@ static void REI_addDevice(const REI_RendererDescVk* pDescVk, REI_Renderer* pRend
         for (uint32_t j = 0; j < strlen(refProps.deviceName); ++j)
             refLowerDeviceName[j] = tolower(refProps.deviceName[j]);
 
-        bool testHasDX12SubStr = strstr(testLowerDeviceName, "dx12") != nullptr;
-        bool refHasDX12SubStr = strstr(refLowerDeviceName, "dx12") != nullptr;
+        bool testHasDX12SubStr = strstr(testLowerDeviceName, "direct3d12") != nullptr;
+        bool refHasDX12SubStr = strstr(refLowerDeviceName, "direct3d12") != nullptr;
 
         if (testHasDX12SubStr && !refHasDX12SubStr) {
             return false;
