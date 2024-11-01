@@ -714,12 +714,16 @@ void REI_cmdCopyBufferToTexture(
     D3D12_RESOURCE_DESC resourceDesc = pTexture->pDxResource->GetDesc();
 
     D3D12_TEXTURE_COPY_LOCATION src = {};
-    D3D12_TEXTURE_COPY_LOCATION dst = {};
     src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
     src.pResource = pSrcBuffer->pDxResource;
-    pCmd->pRenderer->pDxDevice->GetCopyableFootprints(
-        &resourceDesc, subresource, 1, pSubresourceDesc->bufferOffset, &src.PlacedFootprint, NULL, NULL, NULL);
     src.PlacedFootprint.Offset = pSubresourceDesc->bufferOffset;
+    src.PlacedFootprint.Footprint.RowPitch = pSubresourceDesc->rowPitch;
+    src.PlacedFootprint.Footprint.Width = pSubresourceDesc->region.w;
+    src.PlacedFootprint.Footprint.Height = pSubresourceDesc->region.h;
+    src.PlacedFootprint.Footprint.Depth = pSubresourceDesc->region.d;
+    src.PlacedFootprint.Footprint.Format = pTexture->pDxResource->GetDesc().Format;
+
+    D3D12_TEXTURE_COPY_LOCATION dst = {};
     dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
     dst.pResource = pTexture->pDxResource;
     dst.SubresourceIndex = subresource;
