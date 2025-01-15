@@ -3104,6 +3104,12 @@ void REI_addSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* pDesc, R
     *ppSwapchain = pSwapchain;
 }
 
+void REI_resizeSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* pDesc, REI_Swapchain** ppSwapchain)
+{
+    REI_removeSwapchain(pRenderer, *ppSwapchain);
+    REI_addSwapchain(pRenderer, pDesc, ppSwapchain);
+}
+
 void REI_getSwapchainTextures(REI_Swapchain* pSwapchain, uint32_t* count, REI_Texture** ppTextures)
 {
     if (!count)

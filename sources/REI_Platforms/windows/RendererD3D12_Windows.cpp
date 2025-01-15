@@ -522,6 +522,40 @@ void REI_getPipelineCacheData(REI_Renderer* pRenderer, REI_PipelineCache* pPipel
     }
 }
 
+static void util_get_swapchain_buffers(
+    REI_Renderer* pRenderer, const REI_SwapchainDesc* pDesc, REI_Swapchain_Windows* pSwapchain)
+{
+    ID3D12Resource** buffers = (ID3D12Resource**)alloca(pDesc->imageCount * sizeof(ID3D12Resource*));
+
+    // Create rendertargets from swapchain
+    for (uint32_t i = 0; i < pDesc->imageCount; ++i)
+    {
+        CHECK_HRESULT(pSwapchain->pDxSwapChain->GetBuffer(i, IID_PPV_ARGS(&buffers[i])));
+    }
+
+    REI_TextureDesc descColor = {};
+    descColor.width = pDesc->width;
+    descColor.height = pDesc->height;
+    descColor.depth = 1;
+    descColor.arraySize = 1;
+    descColor.format = pDesc->colorFormat;
+    descColor.clearValue = pDesc->colorClearValue;
+    descColor.sampleCount = REI_SAMPLE_COUNT_1;
+    descColor.pNativeHandle = NULL;
+    descColor.descriptors = REI_DESCRIPTOR_TYPE_RENDER_TARGET | REI_DESCRIPTOR_TYPE_TEXTURE;
+    (uint32_t&)descColor.flags = REI_TEXTURE_CREATION_FLAG_ALLOW_DISPLAY_TARGET;
+    descColor.componentMapping[0] = REI_COMPONENT_MAPPING_R;
+    descColor.componentMapping[1] = REI_COMPONENT_MAPPING_G;
+    descColor.componentMapping[2] = REI_COMPONENT_MAPPING_B;
+    descColor.componentMapping[3] = REI_COMPONENT_MAPPING_A;
+
+    for (uint32_t i = 0; i < pDesc->imageCount; ++i)
+    {
+        descColor.pNativeHandle = (uint64_t)buffers[i];
+        REI_addTexture(pRenderer, &descColor, &pSwapchain->ppRenderTargets[i]);
+    }
+}
+
 void REI_addSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* p_desc, REI_Swapchain** pp_swap_chain)
 {
     REI_ASSERT(pRenderer);
@@ -582,38 +616,71 @@ void REI_addSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* p_desc, 
     swapchain->Release();
     pDXGIFactory->Release();
 
-    ID3D12Resource** buffers = (ID3D12Resource**)alloca(p_desc->imageCount * sizeof(ID3D12Resource*));
-
-    // Create rendertargets from swapchain
-    for (uint32_t i = 0; i < p_desc->imageCount; ++i)
-    {
-        CHECK_HRESULT(pSwapChain->pDxSwapChain->GetBuffer(i, IID_PPV_ARGS(&buffers[i])));
-    }
-
-    REI_TextureDesc descColor = {};
-    descColor.width = p_desc->width;
-    descColor.height = p_desc->height;
-    descColor.depth = 1;
-    descColor.arraySize = 1;
-    descColor.format = p_desc->colorFormat;
-    descColor.clearValue = p_desc->colorClearValue;
-    descColor.sampleCount = REI_SAMPLE_COUNT_1;
-    descColor.pNativeHandle = NULL;
-    descColor.descriptors = REI_DESCRIPTOR_TYPE_RENDER_TARGET | REI_DESCRIPTOR_TYPE_TEXTURE;
-    (uint32_t&)descColor.flags = REI_TEXTURE_CREATION_FLAG_ALLOW_DISPLAY_TARGET;
-    descColor.componentMapping[0] = REI_COMPONENT_MAPPING_R;
-    descColor.componentMapping[1] = REI_COMPONENT_MAPPING_G;
-    descColor.componentMapping[2] = REI_COMPONENT_MAPPING_B;
-    descColor.componentMapping[3] = REI_COMPONENT_MAPPING_A;
-
-    for (uint32_t i = 0; i < p_desc->imageCount; ++i)
-    {
-        descColor.pNativeHandle = (uint64_t)buffers[i];
-        REI_addTexture(pRenderer, &descColor, &pSwapChain->ppRenderTargets[i]);
-    }
+    util_get_swapchain_buffers(pRenderer, p_desc, pSwapChain);
 
     pSwapChain->mImageCount = p_desc->imageCount;
     pSwapChain->mEnableVsync = p_desc->enableVsync;
+
+    *pp_swap_chain = pSwapChain;
+}
+
+void REI_resizeSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* p_desc, REI_Swapchain** pp_swap_chain) 
+{
+    REI_ASSERT(pRenderer);
+    REI_ASSERT(p_desc);
+    REI_ASSERT(pp_swap_chain);
+
+    REI_LogPtr pLog = pRenderer->pLog;
+
+    REI_Swapchain_Windows* pSwapChain = (REI_Swapchain_Windows*)*pp_swap_chain;
+
+    for (uint32_t i = 0; i < pSwapChain->mImageCount; ++i)
+    {
+        ID3D12Resource* resource = pSwapChain->ppRenderTargets[i]->pDxResource;
+        REI_removeTexture(pRenderer, pSwapChain->ppRenderTargets[i]);
+        SAFE_RELEASE(resource);
+    }
+
+    if (p_desc->imageCount != pSwapChain->mImageCount)
+    {
+        // save dx swapchain
+        IDXGISwapChain3* pDxSwapchain = pSwapChain->pDxSwapChain;
+
+        // recreate rei swapchain
+        pRenderer->allocator.pFree(pRenderer->allocator.pUserData, pSwapChain);
+        pSwapChain = (REI_Swapchain_Windows*)REI_calloc(
+            pRenderer->allocator, sizeof(REI_Swapchain_Windows) + p_desc->imageCount * sizeof(REI_Texture*));
+
+        // initialize fields 
+        REI_ASSERT(pSwapChain);
+        pSwapChain->pAllocator = &pRenderer->allocator;
+        pSwapChain->ppRenderTargets = (REI_Texture**)(pSwapChain + 1);
+        REI_ASSERT(pSwapChain->ppRenderTargets);
+        pSwapChain->pDxSwapChain = pDxSwapchain;
+
+    }
+
+    DXGI_FORMAT dxFormat = util_to_dx12_swapchain_format(p_desc->colorFormat);
+
+    BOOL allowTearing = FALSE;
+    IDXGIFactory6* pDXGIFactory = nullptr;
+    util_create_dxgi_factory(&pDXGIFactory);
+    pDXGIFactory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
+    pDXGIFactory->Release();
+    
+    UINT newFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+    newFlags |= allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+    CHECK_HRESULT(
+        pSwapChain->pDxSwapChain->ResizeBuffers(
+        p_desc->imageCount, p_desc->width, p_desc->height, dxFormat, newFlags));
+
+    util_get_swapchain_buffers(pRenderer, p_desc, pSwapChain);
+
+    pSwapChain->mDxSyncInterval = p_desc->enableVsync ? 1 : 0;
+    pSwapChain->mImageCount = p_desc->imageCount;
+    pSwapChain->mEnableVsync = p_desc->enableVsync;
+    pSwapChain->mFlags |= (!p_desc->enableVsync && allowTearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
 
     *pp_swap_chain = pSwapChain;
 }

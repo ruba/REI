@@ -1430,6 +1430,7 @@ void REI_cmdAddDebugMarker(REI_Cmd* pCmd, float r, float g, float b, const char*
 
 void REI_addSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* p_desc, REI_Swapchain** pp_swap_chain);
 void REI_removeSwapchain(REI_Renderer* pRenderer, REI_Swapchain* p_swap_chain);
+void REI_resizeSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* p_desc, REI_Swapchain** pp_swap_chain);
 void REI_getSwapchainTextures(REI_Swapchain* pSwapchain, uint32_t* count, REI_Texture** ppTextures);
 void REI_acquireNextImage(
     REI_Renderer* pRenderer, REI_Swapchain* p_swap_chain, REI_Semaphore* p_signal_semaphore, REI_Fence* p_fence,

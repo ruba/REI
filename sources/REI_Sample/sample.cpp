@@ -75,11 +75,8 @@ static uint32_t    screenshotSize;
 static bool        doScreenshot = false;
 static uint32_t    screenshotMask = 0;
 
-static void sample_init_swapchain(REI_SwapchainDesc* swapchainDesc)
+static void sample_init_swapchain_resources(REI_SwapchainDesc* swapchainDesc)
 {
-    REI_addSwapchain(renderer, swapchainDesc, &swapchain);
-    swapChainDesc = *swapchainDesc;
-
     uint32_t count = 0;
     REI_getSwapchainTextures(swapchain, &count, NULL);
     ppSwapchainTextures = (REI_Texture**)malloc(count * sizeof(REI_Texture*));
@@ -105,14 +102,26 @@ static void sample_init_swapchain(REI_SwapchainDesc* swapchainDesc)
     bufDesc.startState = REI_RESOURCE_STATE_COPY_DEST;
     REI_addBuffer(renderer, &bufDesc, &screenshotBuffer);
     REI_mapBuffer(renderer, screenshotBuffer, &screenshotData);
+}
+
+static void sample_fini_swapchain_resources()
+{
+    REI_removeBuffer(renderer, screenshotBuffer);
+    free(ppSwapchainTextures);
+}
+
+static void sample_init_swapchain(REI_SwapchainDesc* swapchainDesc)
+{
+    REI_addSwapchain(renderer, swapchainDesc, &swapchain);
+    swapChainDesc = *swapchainDesc;
+    sample_init_swapchain_resources(swapchainDesc);
     sample_on_swapchain_init(swapchainDesc);
 }
 
 static void sample_fini_swapchain()
 {
     sample_on_swapchain_fini();
-    REI_removeBuffer(renderer, screenshotBuffer);
-    free(ppSwapchainTextures);
+    sample_fini_swapchain_resources();
     REI_removeSwapchain(renderer, swapchain);
 }
 
@@ -168,9 +177,15 @@ void sample_fini()
 void sample_resize(REI_SwapchainDesc* swapchainDesc)
 {
     REI_waitQueueIdle(gfxQueue);
+    
+    sample_on_swapchain_fini();
+    sample_fini_swapchain_resources();
 
-    sample_fini_swapchain();
-    sample_init_swapchain(swapchainDesc);
+    swapChainDesc = *swapchainDesc;
+    REI_resizeSwapchain(renderer, swapchainDesc, &swapchain);
+
+    sample_init_swapchain_resources(swapchainDesc);
+    sample_on_swapchain_init(swapchainDesc);
 }
 
 void sample_save_screenshot(void* data, int w, int h, int premult, int bgra, const char* name);
