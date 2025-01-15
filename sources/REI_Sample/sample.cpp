@@ -181,8 +181,8 @@ void sample_render(uint64_t dt, uint32_t w, uint32_t h)
     FrameSync& sync = frameSyncs[setIndex];
     uint32_t   frameImageIndex = 0;
 
-    REI_acquireNextImage(renderer, swapchain, sync.imageSem, NULL, &frameImageIndex);
     REI_waitForFences(renderer, 1, &sync.fence);
+    REI_acquireNextImage(renderer, swapchain, sync.imageSem, NULL, &frameImageIndex);
 
     REI_Texture* backbuffer = ppSwapchainTextures[frameImageIndex];
 
