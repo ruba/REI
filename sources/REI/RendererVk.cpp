@@ -3853,7 +3853,16 @@ void REI_addDescriptorTableArray(
 
     pDescriptorTableArr->pHandles = structAlloc.alloc<VkDescriptorSet>(pDesc->maxTables);
     pDescriptorTableArr->pDescriptorBindings = structAlloc.alloc<REI_BindingInfo>(numDescriptors);
-    pDescriptorTableArr->pWriteDescriptorSets = structAlloc.alloc<VkWriteDescriptorSet>(numDescriptors);
+    pDescriptorTableArr->pWriteDescriptorSets =
+        structAlloc.alloc<VkWriteDescriptorSet>(numDescriptors * pDesc->maxTables);
+
+    for (uint32_t i = 0; i < numDescriptors * pDesc->maxTables; ++i)
+    {
+        VkWriteDescriptorSet& writeSet = pDescriptorTableArr->pWriteDescriptorSets[i];
+        writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeSet.pNext = nullptr;
+        writeSet.dstArrayElement = 0;
+    }
 
     uint32_t firstDescriptorIndex = pRootSignature->mDescriptorIndexToBindingOffset[slot];
     for (uint32_t i = 0; i < numDescriptors; ++i)
