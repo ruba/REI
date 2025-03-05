@@ -224,7 +224,7 @@ constexpr uint32_t util_REI_selectBestGpu_stack_size_in_bytes()
            (sizeof(REI_DeviceProperties) + sizeof(REI_GpuDesc)) * REI_MAX_GPUS;
 }
 
-static bool REI_selectBestGpu(REI_StackAllocator<true>& stackAlloc, REI_Renderer* pRenderer, D3D_FEATURE_LEVEL* pFeatureLevel)
+static bool REI_selectBestGpu(REI_StackAllocator<true>& stackAlloc, const REI_RendererDescD3D12* pDescDX12, REI_Renderer* pRenderer, D3D_FEATURE_LEVEL* pFeatureLevel)
 {
     const REI_AllocatorCallbacks& allocator = pRenderer->allocator;
     REI_LogPtr pLog = pRenderer->pLog;
@@ -263,12 +263,19 @@ static bool REI_selectBestGpu(REI_StackAllocator<true>& stackAlloc, REI_Renderer
             REI_LOG_TYPE_INFO, "GPU[%u] detected. Vendor ID: %s, Model ID: %s, Revision ID: %s, GPU Name: %s", i,
             gpuSettings[i].vendorId, gpuSettings[i].modelId, gpuSettings[i].revisionId, gpuSettings[i].deviceName);
 
+        if (pDescDX12->desc.gpu_name && strstr(gpuDesc[i].mName, pDescDX12->desc.gpu_name) != nullptr)
+        {
+            gpuIndex = i;
+            break;
+        }
+
         // Check that gpu supports at least graphics
         if (gpuIndex == UINT32_MAX || isDeviceBetter(gpuDesc, i, gpuIndex))
         {
             gpuIndex = i;
         }
     }
+
     // Get the latest and greatest feature level gpu
     if (!SUCCEEDED(gpuDesc[gpuIndex].pGpu->QueryInterface(IID_PPV_ARGS(&pRenderer->pDxActiveGPU))))
     {
@@ -340,7 +347,7 @@ bool d3d12_platform_add_device(const REI_RendererDescD3D12* pDesc, REI_Renderer*
 
     D3D_FEATURE_LEVEL     supportedFeatureLevel = (D3D_FEATURE_LEVEL)0;
     REI_Renderer_Windows* pWindowsRenderer = (REI_Renderer_Windows*)pRenderer;
-    if (!REI_selectBestGpu(stackAlloc, pWindowsRenderer, &supportedFeatureLevel))
+    if (!REI_selectBestGpu(stackAlloc, pDesc, pWindowsRenderer, &supportedFeatureLevel))
         return false;
 
     CHECK_HRESULT(D3D12CreateDevice(

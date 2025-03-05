@@ -733,9 +733,12 @@ D3D12_FILL_MODE gDx12FillModeTranslator[REI_MAX_FILL_MODES] = {
     D3D12_FILL_MODE_WIREFRAME,
 };
 
-const D3D12_COMMAND_LIST_TYPE gDx12CmdTypeTranslator[REI_MAX_QUEUE_FLAG] = { D3D12_COMMAND_LIST_TYPE_DIRECT,
-                                                                             D3D12_COMMAND_LIST_TYPE_COMPUTE,
-                                                                             D3D12_COMMAND_LIST_TYPE_COPY };
+const D3D12_COMMAND_LIST_TYPE gDx12CmdTypeTranslator[REI_MAX_CMD_TYPE] = {
+    D3D12_COMMAND_LIST_TYPE_DIRECT,
+    D3D12_COMMAND_LIST_TYPE_BUNDLE,
+    D3D12_COMMAND_LIST_TYPE_COPY,
+    D3D12_COMMAND_LIST_TYPE_COMPUTE,
+};
 
 const D3D12_COMMAND_QUEUE_PRIORITY gDx12QueuePriorityTranslator[REI_MAX_QUEUE_PRIORITY]{
     D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
@@ -1535,8 +1538,12 @@ void REI_getQueueProperties(REI_Queue* pQueue, REI_QueueProperties* outPropertie
 {
     REI_ASSERT(pQueue);
     REI_ASSERT(outProperties);
-    UINT64 timestampFreq;
-    CHECK_HRESULT(pQueue->pDxQueue->GetTimestampFrequency(&timestampFreq));
+    UINT64 timestampFreq = 0;
+
+    if (pQueue->mType == REI_CMD_POOL_DIRECT || pQueue->mType == REI_CMD_POOL_COMPUTE)
+    {
+        CHECK_HRESULT(pQueue->pDxQueue->GetTimestampFrequency(&timestampFreq));
+    }
 
     outProperties->gpuTimestampFreq = (double)timestampFreq;
     outProperties->uploadGranularity = { 1, 1, 1 };
