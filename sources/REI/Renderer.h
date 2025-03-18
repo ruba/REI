@@ -418,6 +418,15 @@ typedef enum REI_DescriptorType
     //#endif
 } REI_DescriptorType;
 
+typedef enum REI_DescriptorFlags
+{
+    REI_DESCRIPTOR_FLAG_NONE = 0,
+    REI_DESCRIPTOR_FLAG_DYNAMIC = (1 << 0),
+    REI_DESCRIPTOR_FLAG_MAX_VALUE,
+    REI_DESCRIPTOR_FLAG_BIT_COUNT = 2
+} REI_DescriptorFlags;
+static_assert(REI_DESCRIPTOR_FLAG_MAX_VALUE <= (1 << REI_DESCRIPTOR_FLAG_BIT_COUNT), "");
+
 typedef enum REI_SampleCount
 {
     REI_SAMPLE_COUNT_1 = 1,
@@ -1155,6 +1164,7 @@ typedef struct REI_DescriptorBinding
     uint32_t           binding;
     uint32_t           reg;
     uint32_t           descriptorCount;
+    uint32_t           flags;
 } REI_DescriptorBinding;
 
 typedef struct REI_DescriptorTableLayout

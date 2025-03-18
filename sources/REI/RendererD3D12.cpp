@@ -2508,7 +2508,7 @@ struct RootSigTypes<D3D_ROOT_SIGNATURE_VERSION_1_0>
     typedef D3D12_ROOT_PARAMETER ROOT_PARAMETER;
     typedef D3D12_DESCRIPTOR_RANGE DESCRIPTOR_RANGE;
 
-    static inline void setRangeFlags(DESCRIPTOR_RANGE& range, D3D12_DESCRIPTOR_RANGE_FLAGS flags){};
+    static inline void setRangeFlags(DESCRIPTOR_RANGE& range, uint32_t flags){};
 
     static inline void setRootSignatureDesc(
         D3D12_VERSIONED_ROOT_SIGNATURE_DESC& desc, ROOT_PARAMETER* pParams, uint32_t numParameters,
@@ -2528,7 +2528,16 @@ struct RootSigTypes<D3D_ROOT_SIGNATURE_VERSION_1_1>
     typedef D3D12_ROOT_PARAMETER1    ROOT_PARAMETER;
     typedef D3D12_DESCRIPTOR_RANGE1 DESCRIPTOR_RANGE;
 
-    static inline void setRangeFlags(DESCRIPTOR_RANGE& range, D3D12_DESCRIPTOR_RANGE_FLAGS flags) { range.Flags = flags; };
+    static inline void setRangeFlags(DESCRIPTOR_RANGE& range, uint32_t flags)
+    {
+        // TODO make proper flags handling
+        switch (flags)
+        {
+            case REI_DESCRIPTOR_FLAG_NONE: range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE; break;
+            case REI_DESCRIPTOR_FLAG_DYNAMIC: range.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_DESCRIPTORS_VOLATILE; break;
+            default: REI_ASSERT(0);
+        }
+    };
 
     static inline void setRootSignatureDesc(
         D3D12_VERSIONED_ROOT_SIGNATURE_DESC& desc, ROOT_PARAMETER* pParams, uint32_t numParameters,
@@ -2635,7 +2644,7 @@ HRESULT root_signature(REI_StackAllocator<true>& stackAlloc,
                 range.RegisterSpace = slot;
                 range.NumDescriptors = setLayoutBinding.descriptorCount;
                 range.OffsetInDescriptorsFromTableStart = descriptorIndex;
-                RootSigTypes<VERSION>::setRangeFlags(range, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+                RootSigTypes<VERSION>::setRangeFlags(range, setLayoutBinding.flags);
 
                 // Store the cumulative descriptor count so we can just fetch this value later when allocating descriptor handles
                 // This avoids unnecessary loops in the future to find the unfolded number of descriptors (includes shader resource arrays) in the descriptor table
@@ -2651,7 +2660,7 @@ HRESULT root_signature(REI_StackAllocator<true>& stackAlloc,
                 range.RegisterSpace = slot;
                 range.NumDescriptors = setLayoutBinding.descriptorCount;
                 range.OffsetInDescriptorsFromTableStart = descriptorIndex;
-                RootSigTypes<VERSION>::setRangeFlags(range, D3D12_DESCRIPTOR_RANGE_FLAG_NONE);
+                RootSigTypes<VERSION>::setRangeFlags(range, setLayoutBinding.flags);
 
                 // Store the cumulative descriptor count so we can just fetch this value later when allocating descriptor handles
                 // This avoids unnecessary loops in the future to find the unfolded number of descriptors (includes shader resource arrays) in the descriptor table
