@@ -604,6 +604,9 @@ void REI_addSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* p_desc, 
     desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
     desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
+    if (p_desc->displayOnly)
+        desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
+
     BOOL allowTearing = FALSE;
     pDXGIFactory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
     desc.Flags |= allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
@@ -677,6 +680,9 @@ void REI_resizeSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* p_des
     
     UINT newFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
     newFlags |= allowTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+    if (p_desc->displayOnly)
+        newFlags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
 
     CHECK_HRESULT(
         pSwapChain->pDxSwapChain->ResizeBuffers(

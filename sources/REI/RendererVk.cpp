@@ -2804,6 +2804,7 @@ void REI_addSwapchain(REI_Renderer* pRenderer, const REI_SwapchainDesc* pDesc, R
     REI_ASSERT(pRenderer);
     REI_ASSERT(pDesc);
     REI_ASSERT(ppSwapchain);
+    REI_ASSERT(!pDesc->displayOnly);   // TODO implement
     const REI_AllocatorCallbacks& allocator = pRenderer->allocator;
 
     /************************************************************************/

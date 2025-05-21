@@ -1301,6 +1301,8 @@ typedef struct REI_SwapchainDesc
     REI_ClearValue colorClearValue;
     /// Set whether swap chain will be presented using vsync
     bool enableVsync;
+    /// Set whether swap chain will be capture with win32 api (e.g. screenshots)
+    bool displayOnly;
 } REI_SwapchainDesc;
 
 // API functions
