@@ -47,6 +47,12 @@ void REI_Print(const char* str)
     printf("%s", str);
 }
 
+void REI_FatalError(const char* message)
+{
+    MessageBoxA(NULL, message, "Fatal Error", MB_ICONERROR | MB_OK);
+    ExitProcess(EXIT_FAILURE);
+}
+
 DWORD WINAPI ThreadFunctionStatic(void* data)
 {
     ThreadDesc* pDesc = (ThreadDesc*)data;

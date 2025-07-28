@@ -659,6 +659,7 @@ static inline int REI_FailedAssert(const char* file, int line, const char* state
 }
 void REI_DebugOutput(const char* str);
 void REI_Print(const char* str);
+void REI_FatalError(const char* message);
 
 #define REI_DEFAULT_MALLOC_ALIGNMENT 8
 
