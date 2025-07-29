@@ -76,6 +76,12 @@ typedef enum REI_LogType
 #    define REI_ASSERT(b, ...) REI_ASSUME(b)
 #endif
 
+#define REI_CHECK_FAIL(b, msg)   \
+    do                           \
+        if (!(b))            \
+            REI_FatalError(msg); \
+    while (0)
+
 using REI_LogPtr = void (*)(REI_LogType, const char* msg, ...);
 
 #if INTPTR_MAX == 0x7FFFFFFFFFFFFFFFLL
