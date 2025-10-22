@@ -1361,8 +1361,9 @@ void REI_addFence(REI_Renderer* pRenderer, REI_Fence** pp_fence)
     REI_Fence* pFence = (REI_Fence*)pRenderer->allocator.pMalloc(pRenderer->allocator.pUserData, sizeof(REI_Fence), 0);
     REI_ASSERT(pFence);
 
-    CHECK_HRESULT(pRenderer->pDxDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&pFence->pDxFence)));
-    pFence->mFenceValue = 1;
+    pFence->mFenceValue = 2;
+    CHECK_HRESULT(
+        pRenderer->pDxDevice->CreateFence(pFence->mFenceValue - 1, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&pFence->pDxFence)));
 
     pFence->pDxWaitIdleFenceEvent = CreateEventEx(NULL, FALSE, FALSE, EVENT_ALL_ACCESS);
 
